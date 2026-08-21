@@ -1,0 +1,17 @@
+# data
+data/
+*.xls
+*.xls.gz
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# notebooks
+.ipynb_checkpoints/
+
+# OS
+.DS_Store

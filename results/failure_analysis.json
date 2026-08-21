@@ -1,0 +1,5 @@
+{
+  "mean_F_condition": 8.246528625488281,
+  "mean_F_cell_line": 17.58316421508789,
+  "note": "cell_line F >> condition F means batch dominates; would flag for correction/stratification in the loop"
+}
