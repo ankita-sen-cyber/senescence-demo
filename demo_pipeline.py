@@ -22,7 +22,13 @@ os.makedirs("results", exist_ok=True)
 # ----------------------------------------------------------------------------
 # 1. Load + label
 # ----------------------------------------------------------------------------
-raw = pd.read_excel("data/GSE63577_counts_rpkm_exvivo_jenage_data.xls", engine="xlrd")
+DATA_PATH = "data/GSE63577_counts_rpkm_exvivo_jenage_data.xls"
+if not os.path.exists(DATA_PATH):
+    raise SystemExit(
+        f"Data file not found: {DATA_PATH}\n"
+        "Run `python scripts/download_data.py` first to fetch and decompress it."
+    )
+raw = pd.read_excel(DATA_PATH, engine="xlrd")
 meta_cols = ["ensembl_gene_id", "external_gene_id", "description", "gene_biotype"]
 count_cols = [c for c in raw.columns if c not in meta_cols]
 
