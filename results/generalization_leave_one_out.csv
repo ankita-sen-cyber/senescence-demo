@@ -1,0 +1,6 @@
+held_out_cell_line,n_train,n_test,accuracy
+BJ,24,6,0.5
+HFF,24,6,1.0
+IMR90,24,6,0.8333333333333334
+MRC5,24,6,0.5
+WI38,24,6,1.0
