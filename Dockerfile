@@ -4,7 +4,14 @@
 #   docker build -t rnaseq-loop .
 #
 # Run (GPU — requires nvidia-container-toolkit on the host):
-#   docker run --gpus all -it -v $(pwd)/data:/app/data -v $(pwd)/outputs:/app/outputs rnaseq-loop
+#   docker run --gpus all -it \
+#     -v $(pwd)/data:/app/data \
+#     -v $(pwd)/checkpoints:/app/checkpoints \
+#     -v $(pwd)/outputs:/app/outputs \
+#     rnaseq-loop
+#
+# Mounting data/, checkpoints/, and outputs/ as volumes keeps them on the host
+# disk, so the downloaded checkpoint and results survive container restarts.
 #
 # NOTE for RTX 5090 (Blackwell, sm_120): use a base image with CUDA 12.8+
 # and PyTorch 2.6+. Adjust the FROM line to match your host CUDA driver.

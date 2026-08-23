@@ -112,7 +112,11 @@ Build a GPU image (requires `nvidia-container-toolkit` on the host):
 
 ```bash
 docker build -t rnaseq-loop .
-docker run --gpus all -it -v $(pwd)/data:/app/data -v $(pwd)/outputs:/app/outputs rnaseq-loop
+docker run --gpus all -it \
+  -v $(pwd)/data:/app/data \
+  -v $(pwd)/checkpoints:/app/checkpoints \
+  -v $(pwd)/outputs:/app/outputs \
+  rnaseq-loop
 ```
 
 **RTX 5090 note:** that card is Blackwell (compute capability 12.0). It needs
