@@ -17,9 +17,10 @@ from pathlib import Path
 
 
 V2_SUBFOLDERS = {
-    "V2-104M": "gf-12L-95M-i4096",     # 12-layer, ~95M params, 4096 input len (V2 default)
-    "V2-104M-CLcancer": "gf-12L-95M-i4096_CLcancer",
-    "V1-30M-6L": "gf-6L-30M-i2048",     # small V1 baseline
+    "V1-10M": "Geneformer-V1-10M",              # 10M params, 6 layers, 2048 input
+    "V2-104M": "Geneformer-V2-104M",            # 104M params, 4096 input (recommended)
+    "V2-104M-CLcancer": "Geneformer-V2-104M_CLcancer",
+    "V2-316M": "Geneformer-V2-316M",            # 316M params (largest)
 }
 
 
