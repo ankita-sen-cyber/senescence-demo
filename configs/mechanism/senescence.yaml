@@ -1,0 +1,45 @@
+# In silico perturbation for senescence-reversal target discovery.
+state_embs:
+  model_directory: outputs/senescence/finetune/runs/ksplit1/                 # populated after finetune
+  labeled_dataset: outputs/senescence/finetune/prepared/senescence_labeled.dataset
+  state_key: senescence_label
+  states: ["senescent", "proliferating"]
+  output_dir: outputs/senescence/state_embs
+  output_prefix: senescence
+  model_version: V2
+  max_ncells_per_state: 5000
+  emb_layer: -1
+  forward_batch_size: 100
+  nproc: 4
+
+isp:
+  model_directory: outputs/senescence/finetune/runs/ksplit1/
+  input_data_file: outputs/senescence/finetune/prepared/senescence_labeled.dataset
+  output_directory: outputs/senescence/isp
+  output_prefix: senescence
+  # ISPConfig
+  perturb_type: "delete"
+  genes_to_perturb: "all"
+  combos: 0
+  anchor_gene: null
+  model_type: "CellClassifier"
+  num_classes: 2
+  emb_mode: "cls_and_gene"
+  filter_data: { senescence_label: ["senescent"] }   # start from senescent cells
+  cell_states_to_model:
+    state_key: "senescence_label"
+    start_state: "senescent"
+    goal_state: "proliferating"
+    alt_states: []
+  state_embs_dict_path: outputs/senescence/state_embs/senescence_state_embs_dict.pt
+  max_ncells: 2000
+  emb_layer: -1
+  forward_batch_size: 100
+  nproc: 8
+  model_version: V2
+  clear_mem_ncells: 1000
+
+stats:
+  isp_output_dir: outputs/senescence/isp
+  stats_output_dir: outputs/senescence/isp_stats
+  output_prefix: senescence

@@ -1,0 +1,13 @@
+.git
+.gitignore
+data/
+outputs/
+results/
+checkpoints/
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+.ipynb_checkpoints/
+.DS_Store

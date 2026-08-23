@@ -1,0 +1,13 @@
+acquisition:
+  k: 20
+  weights:
+    bald: 0.5
+    tf_disagreement: 0.3
+    coverage: 0.2
+pool_embeddings_npy: outputs/senescence/active/pool_embeddings.npy
+labeled_embeddings_npy: outputs/senescence/active/labeled_embeddings.npy
+ensemble_probs_npy: outputs/senescence/active/ensemble_probs.npy    # (n_models, n_pool, n_classes)
+predicted_tf_activity_npy: outputs/senescence/active/pred_tf.npy    # optional
+prior_tf_activity_npy: outputs/senescence/active/prior_tf.npy       # optional
+already_labeled_ids_txt: outputs/senescence/active/labeled_ids.txt
+output_picks_txt: outputs/senescence/active/next_experiments.txt

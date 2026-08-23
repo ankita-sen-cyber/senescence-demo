@@ -3,6 +3,11 @@ data/
 *.xls
 *.xls.gz
 
+# model checkpoints + run outputs
+checkpoints/
+outputs/
+mlruns/
+
 # python
 __pycache__/
 *.pyc

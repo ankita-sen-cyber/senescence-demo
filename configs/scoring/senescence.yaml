@@ -1,0 +1,17 @@
+# Score targets by fusing ISP attribution, Open Targets (aging = EFO_0002508)
+# and DepMap (optional for rejuvenation; more critical for oncology).
+attribution_csv: outputs/senescence/isp_stats/senescence.csv
+opentargets:
+  disease_efo: "EFO_0002508"   # "aging"; use EFO_0000305 for breast carcinoma
+  top_n: 2000
+depmap:
+  csv_path: null   # optional; e.g. data/priors/depmap/CRISPRGeneEffect.csv
+  subset_cell_lines: null
+
+weights:
+  isp_attribution: 0.5
+  ot_overall_score: 0.3
+  depmap_frac_essential: 0.2
+
+min_sources: 2
+output_csv: outputs/senescence/targets/ranked_targets.csv
