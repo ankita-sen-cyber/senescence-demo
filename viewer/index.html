@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Senescence Target Discovery — Results Viewer</title>
+<link rel="preconnect" href="https://api.fontshare.com">
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%230b6e64' stroke-width='3' stroke-dasharray='52 17'/%3E%3Ccircle cx='27' cy='16' r='4' fill='%230b6e64'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="#top" aria-label="Senescence demo results">
+      <svg class="logo" viewBox="0 0 32 32" width="28" height="28" aria-label="Closed-loop logo" fill="none">
+        <circle cx="16" cy="16" r="11" stroke="currentColor" stroke-width="2.5" stroke-dasharray="52 17" stroke-linecap="round"/>
+        <circle cx="27" cy="16" r="4" fill="var(--color-primary)"/>
+      </svg>
+      <span class="brand-text">senescence<span class="brand-dim">-demo</span></span>
+    </a>
+    <nav class="header-nav" aria-label="Sections">
+      <a href="#volcano">Expression</a>
+      <a href="#targets">Targets</a>
+      <a href="#mechanism">Mechanism</a>
+      <a href="#validation">Validation</a>
+      <a href="#robustness">Robustness</a>
+    </nav>
+    <button data-theme-toggle aria-label="Switch to light mode" class="theme-btn"></button>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ============ OVERVIEW ============ -->
+  <section class="hero">
+    <p class="eyebrow">Results viewer · GSE63577 · 30 fibroblast samples · 5 cell lines</p>
+    <h1>Senescence target discovery</h1>
+    <p class="lede">A CPU-only, interpretable pipeline that ranks candidate intervention targets for
+    replicative senescence — with an explicit diagnose-and-refine loop and validation against
+    known senescence biology.</p>
+
+    <div class="kpi-grid">
+      <div class="kpi">
+        <span class="kpi-value" id="kpi-recovered">–</span>
+        <span class="kpi-label">Known markers recovered</span>
+        <span class="kpi-note">of 20 literature positives</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-value" id="kpi-targets">–</span>
+        <span class="kpi-label">Ranked candidate targets</span>
+        <span class="kpi-note">split into inhibit / activate</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-value" id="kpi-sig">–</span>
+        <span class="kpi-label">Significant genes (batch-aware)</span>
+        <span class="kpi-note">FDR &lt; 0.05, iteration 1</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-value" id="kpi-loo">–</span>
+        <span class="kpi-label">Mean held-out accuracy</span>
+        <span class="kpi-note">leave-one-cell-line-out</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PIPELINE ============ -->
+  <section class="pipeline-strip" aria-label="Pipeline steps">
+    <ol class="pipeline">
+      <li><span class="step-n">1</span>Differential expression</li>
+      <li><span class="step-n">2</span>Confounding diagnosis</li>
+      <li><span class="step-n">3</span>Batch-aware re-analysis</li>
+      <li><span class="step-n">4</span>Pathway &amp; TF activity</li>
+      <li><span class="step-n">5</span>Target ranking</li>
+      <li><span class="step-n">6</span>Known-biology validation</li>
+    </ol>
+  </section>
+
+  <!-- ============ FAILURE ANALYSIS ============ -->
+  <section class="section" id="failure">
+    <div class="section-head">
+      <h2>Why two iterations? The pipeline caught its own failure</h2>
+      <p>Per-gene two-way ANOVA on the naive pass showed cell-line identity explaining more variance
+      than the biology of interest. Instead of reporting confounded results, the loop flagged it and
+      re-ran with batch-aware statistics.</p>
+    </div>
+    <div class="failure-cards">
+      <div class="failure-card">
+        <span class="f-label">Mean F-statistic · senescence condition</span>
+        <span class="f-value" id="f-cond">–</span>
+        <div class="f-bar"><div class="f-fill cond" id="f-cond-bar"></div></div>
+      </div>
+      <div class="failure-card">
+        <span class="f-label">Mean F-statistic · cell line (batch)</span>
+        <span class="f-value warn" id="f-cell">–</span>
+        <div class="f-bar"><div class="f-fill cell" id="f-cell-bar"></div></div>
+      </div>
+    </div>
+    <p class="annotation">Cell-line variance ≈ 2× the condition signal → naive pooled analysis is unreliable.
+    Iteration 1 stratifies by cell line, sharpening canonical senescence signals (see validation below).</p>
+  </section>
+
+  <!-- ============ VOLCANO ============ -->
+  <section class="section" id="volcano">
+    <div class="section-head">
+      <h2>Differential expression</h2>
+      <p>Each point is a gene: effect size (log₂ fold change, senescent vs. young) against statistical
+      confidence. Named points are literature senescence markers. Toggle iterations to see the effect of
+      batch correction.</p>
+    </div>
+    <div class="chart-toolbar">
+      <div class="seg" role="tablist" aria-label="Iteration">
+        <button class="seg-btn" data-iter="0" role="tab" aria-selected="false">Iteration 0 · naive pooled</button>
+        <button class="seg-btn active" data-iter="1" role="tab" aria-selected="true">Iteration 1 · batch-aware</button>
+      </div>
+      <div class="legend" id="volcano-legend"></div>
+    </div>
+    <div class="chart-wrap tall"><canvas id="volcanoChart"></canvas></div>
+    <p class="annotation" id="volcano-note"></p>
+  </section>
+
+  <!-- ============ TOP TARGETS ============ -->
+  <section class="section" id="targets">
+    <div class="section-head">
+      <h2>Ranked intervention targets</h2>
+      <p>Final scored candidates from the batch-aware analysis, combining effect size, confidence and
+      external priors. <strong>Inhibit</strong> = gene is up in senescent cells, drugging it down is
+      senolytic-style. <strong>Activate</strong> = gene is down in senescent cells, restoring it is the hypothesis.</p>
+    </div>
+    <div class="chart-toolbar">
+      <div class="seg" role="tablist" aria-label="Direction filter">
+        <button class="seg-btn active" data-dir="all" role="tab" aria-selected="true">All</button>
+        <button class="seg-btn" data-dir="inhibit" role="tab" aria-selected="false">Inhibit</button>
+        <button class="seg-btn" data-dir="activate" role="tab" aria-selected="false">Activate</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="targets-table" aria-label="Ranked targets">
+        <thead>
+          <tr><th>#</th><th>Gene</th><th>Direction</th><th class="num">log₂FC</th><th class="num">FDR</th><th class="num">Score</th><th class="score-col">|Score|</th></tr>
+        </thead>
+        <tbody id="targets-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ MECHANISM ============ -->
+  <section class="section" id="mechanism">
+    <div class="section-head">
+      <h2>Mechanistic context</h2>
+      <p>Pathway enrichment (GSEA, Hallmark sets) and transcription-factor regulon activity provide the
+      "why" behind the ranking — targets sitting in coherent senescence programs are more credible than
+      isolated hits.</p>
+    </div>
+    <div class="two-col">
+      <div class="panel">
+        <h3>Pathway enrichment</h3>
+        <p class="panel-sub">Top 14 by |NES| · positive = up in senescent cells</p>
+        <div class="chart-wrap med"><canvas id="pathwayChart"></canvas></div>
+      </div>
+      <div class="panel">
+        <h3>Transcription-factor activity</h3>
+        <p class="panel-sub">Top 12 regulons by score · color = inferred mode</p>
+        <div class="chart-wrap med"><canvas id="tfChart"></canvas></div>
+        <div class="legend" id="tf-legend"></div>
+      </div>
+    </div>
+    <p class="annotation">Canonical senescence programs appear where expected: interferon and inflammatory
+    (SASP-adjacent) signaling enriched upward, proliferation programs (E2F targets) down — with TP53 and
+    E2F4 regulons among the strongest signals.</p>
+  </section>
+
+  <!-- ============ VALIDATION ============ -->
+  <section class="section" id="validation">
+    <div class="section-head">
+      <h2>Validation against known biology</h2>
+      <p>20 literature senescence markers and senolytic targets act as positive controls. A marker counts
+      as <em>recovered</em> when the pipeline finds it changed in the expected direction. This is what
+      makes the demo falsifiable.</p>
+    </div>
+    <div class="val-summary">
+      <div class="val-stat">
+        <span class="val-big" id="val-count">–</span>
+        <span class="val-cap">recovered in iteration 1</span>
+      </div>
+      <div class="val-note">
+        <p>Including senolytic drug targets <span class="gene-chip">BCL2L1</span> (BCL-xL, navitoclax) and
+        <span class="gene-chip">MDM2</span> (p53 axis) — both recovered with the expected direction.
+        Batch correction fixed markers the naive pass missed, e.g. <span class="gene-chip">TP53</span>.</p>
+      </div>
+    </div>
+    <div class="marker-grid" id="marker-grid" role="list"></div>
+    <div class="legend" id="marker-legend"></div>
+  </section>
+
+  <!-- ============ ROBUSTNESS ============ -->
+  <section class="section" id="robustness">
+    <div class="section-head">
+      <h2>Does it generalize?</h2>
+      <p>Leave-one-cell-line-out: a classifier is trained on four cell lines and asked to label the held-out
+      fifth. Honest reporting — performance varies by cell line, which is exactly the kind of caveat a
+      reviewer should see.</p>
+    </div>
+    <div class="chart-wrap short"><canvas id="looChart"></canvas></div>
+    <p class="annotation" id="loo-note"></p>
+  </section>
+
+  <footer class="site-footer">
+    <p>Data: <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE63577" target="_blank" rel="noopener">GEO GSE63577</a>
+    — replicative senescence in human fibroblasts, 5 cell lines. Pipeline:
+    <a href="https://github.com/ankita-sen-cyber/senescence-demo" target="_blank" rel="noopener">senescence-demo</a> (private).</p>
+    <p class="foot-dim">Computational predictions for discussion only — not medical or therapeutic claims. Every ranked target is a hypothesis awaiting wet-lab validation.</p>
+  </footer>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
