@@ -74,6 +74,17 @@ python make_figures.py               # regenerate the charts
 
 Outputs land in `results/`. A self-contained report is at `report.html`.
 
+For an interactive way to browse the outputs (volcano plot with an iteration
+toggle, ranked-target table, pathway/TF charts, marker-validation grid), open the
+results viewer in `viewer/` — plain HTML/JS, no build step:
+
+```bash
+cd viewer && python3 -m http.server 8080   # then open http://localhost:8080
+```
+
+See `viewer/README.md` for details, including how to refresh its data snapshot
+after re-running the pipeline.
+
 ### Option B — Geneformer (GPU)
 
 The foundation-model upgrade. Requires an NVIDIA GPU (16 GB+ recommended; an RTX
@@ -81,7 +92,13 @@ The foundation-model upgrade. Requires an NVIDIA GPU (16 GB+ recommended; an RTX
 
 ```bash
 pip install -r requirements.txt -r requirements-gpu.txt
-pip install git+https://huggingface.co/ctheodoris/Geneformer
+
+# Install Geneformer by cloning first — `pip install git+https://huggingface.co/...`
+# often fails with "fatal: expected 'packfile'" because pip's partial clone
+# (--filter=blob:none) is unreliable against Hugging Face's git backend.
+git lfs install   # required: the package contains LFS-tracked dictionary files
+git clone https://huggingface.co/ctheodoris/Geneformer
+pip install ./Geneformer
 
 python scripts/00_fetch_geneformer.py --model gc-30M-i2048   # download checkpoint
 python scripts/01_pull_census.py --config configs/data/senescence.yaml
@@ -146,6 +163,7 @@ image in the `Dockerfile` to a CUDA 12.8 build.
 ├── requirements.txt        # CPU deps
 ├── requirements-gpu.txt    # Geneformer/GPU deps
 ├── Dockerfile
+├── viewer/                 # interactive results viewer (static HTML/JS)
 └── report.html             # self-contained demo report
 ```
 
