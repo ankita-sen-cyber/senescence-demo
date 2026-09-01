@@ -12,17 +12,14 @@ Built to be runnable two ways:
 
 ---
 
-## What this is (plain language)
+## What this is
 
-Every cell is a tiny factory running ~20,000 "recipes" (genes). RNA-seq takes a
-snapshot of which recipes are active. This project compares two states of cells
-(e.g. **senescent = old/retired** vs. **young = healthy**) and asks:
+RNA-seq measures gene activity across thousands of genes in each sample. This
+project compares two cell states — **senescent** and **young** — and asks which
+genes are most associated with the senescent state.
 
-> Which genes, if we switched them off or on, would push an old cell back toward
-> young?
-
-The answer is a **ranked list of intervention targets** — a hypothesis for a wet-lab
-team to test, not a finished result.
+The output is a **ranked list of intervention targets**: genes that may be worth
+testing in follow-up experiments, not a final biological conclusion.
 
 ## The core idea: a closed loop
 
