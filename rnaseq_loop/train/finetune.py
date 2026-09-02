@@ -32,6 +32,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
+import shutil
+from collections import Counter
 from typing import Any
 
 from rnaseq_loop.utils import ensure_dir, get_logger
@@ -102,7 +104,7 @@ def _training_args(cfg: FinetuneConfig) -> dict[str, Any]:
         "metric_for_best_model": cfg.metric_for_best_model,
         "greater_is_better": cfg.greater_is_better,
         "seed": cfg.seed,
-        "report_to": ["mlflow"],
+        "report_to": [],
     }
 
 
@@ -142,6 +144,40 @@ def finetune(cfg: FinetuneConfig) -> dict[str, Path]:
     out = ensure_dir(cfg.output_dir)
     prep_dir = ensure_dir(out / "prepared")
     run_dir = ensure_dir(out / "runs")
+    input_data_file = cfg.tokenized_dataset
+
+    # HF datasets can stratify only by ClassLabel columns.
+    # If a string/Value column is requested (e.g. dataset_id), encode it first.
+    if cfg.stratify_splits_col:
+        from datasets import ClassLabel, load_from_disk
+
+        ds = load_from_disk(cfg.tokenized_dataset)
+        strat_col = cfg.stratify_splits_col
+        if strat_col not in ds.column_names:
+            log.warning(
+                f"stratify_splits_col='{strat_col}' not found in dataset; disabling stratification."
+            )
+            cfg.stratify_splits_col = None
+        else:
+            counts = Counter(ds[strat_col])
+            if counts and min(counts.values()) < 2:
+                log.warning(
+                    f"stratify_splits_col='{strat_col}' has singleton groups in this pilot run; "
+                    "disabling stratification."
+                )
+                cfg.stratify_splits_col = None
+            
+            feat = ds.features[strat_col]
+            if cfg.stratify_splits_col and not isinstance(feat, ClassLabel):
+                log.info(
+                    f"Encoding '{strat_col}' as ClassLabel for stratified train/test split."
+                )
+                ds = ds.class_encode_column(strat_col)
+                encoded_path = prep_dir / f"{cfg.output_prefix}_stratify_encoded.dataset"
+                if encoded_path.exists():
+                    shutil.rmtree(encoded_path)
+                ds.save_to_disk(str(encoded_path))
+                input_data_file = str(encoded_path)
 
     quantize: bool | dict = _quantize_config() if cfg.quantize_4bit_lora else False
 
@@ -163,11 +199,34 @@ def finetune(cfg: FinetuneConfig) -> dict[str, Path]:
     )
 
     log.info("Preparing labeled dataset")
-    cc.prepare_data(
-        input_data_file=cfg.tokenized_dataset,
-        output_directory=str(prep_dir),
-        output_prefix=cfg.output_prefix,
-    )
+    try:
+        cc.prepare_data(
+            input_data_file=input_data_file,
+            output_directory=str(prep_dir),
+            output_prefix=cfg.output_prefix,
+            test_size=0,
+        )
+    except ValueError as e:
+        msg = str(e)
+        if cfg.stratify_splits_col and (
+            "Minimum class count error" in msg
+            or "least populated class" in msg
+            or "minimum number of groups" in msg
+        ):
+            log.warning(
+                "Stratified split is not feasible for this small pilot dataset; "
+                "retrying without stratification."
+            )
+            cfg.stratify_splits_col = None
+            cc.stratify_splits_col = None
+            cc.prepare_data(
+                input_data_file=input_data_file,
+                output_directory=str(prep_dir),
+                output_prefix=cfg.output_prefix,
+                test_size=0,
+            )
+        else:
+            raise
 
     labeled = prep_dir / f"{cfg.output_prefix}_labeled.dataset"
     id_class_dict = prep_dir / f"{cfg.output_prefix}_id_class_dict.pkl"

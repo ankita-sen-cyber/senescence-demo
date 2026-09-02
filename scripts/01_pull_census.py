@@ -2,9 +2,14 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
 import yaml
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from rnaseq_loop.data import CensusQuery, label_age_binary, label_senescence_binary, pull_slice
 from rnaseq_loop.utils import get_logger, set_seed
@@ -15,9 +20,17 @@ log = get_logger("pull_census")
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--config", required=True, type=Path)
+    p.add_argument("--max-cells", type=int, default=None,
+                   help="Override census.max_cells from config for pilot runs.")
+    p.add_argument("--obs-filter", type=str, default=None,
+                   help="Override census.obs_value_filter from config.")
     args = p.parse_args()
 
     cfg = yaml.safe_load(args.config.read_text())
+    if args.max_cells is not None:
+        cfg.setdefault("census", {})["max_cells"] = args.max_cells
+    if args.obs_filter is not None:
+        cfg.setdefault("census", {})["obs_value_filter"] = args.obs_filter
     set_seed(0)
 
     q = CensusQuery(**cfg["census"])

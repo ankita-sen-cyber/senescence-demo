@@ -89,15 +89,9 @@ The foundation-model upgrade. Requires an NVIDIA GPU (16 GB+ recommended; an RTX
 
 ```bash
 pip install -r requirements.txt -r requirements-gpu.txt
+pip install -e ./Geneformer
 
-# Install Geneformer by cloning first — `pip install git+https://huggingface.co/...`
-# often fails with "fatal: expected 'packfile'" because pip's partial clone
-# (--filter=blob:none) is unreliable against Hugging Face's git backend.
-git lfs install   # required: the package contains LFS-tracked dictionary files
-git clone https://huggingface.co/ctheodoris/Geneformer
-pip install ./Geneformer
-
-python scripts/00_fetch_geneformer.py --model gc-30M-i2048   # download checkpoint
+python scripts/00_fetch_geneformer.py --model V2-104M        # stage checkpoint
 python scripts/01_pull_census.py --config configs/data/senescence.yaml
 python scripts/02_tokenize.py --input data/senescence/census_slice.h5ad --workdir data/senescence --prefix senescence
 python scripts/03_finetune.py --config configs/train/senescence_cls.yaml
@@ -106,6 +100,16 @@ python scripts/05_isp.py --config configs/mechanism/senescence.yaml
 python scripts/06_mechanism.py --isp-stats-csv outputs/senescence/isp_stats/senescence.csv --output-dir outputs/senescence/mechanism/iter1
 python scripts/07_score_targets.py --config configs/scoring/senescence.yaml
 python scripts/08_failure_and_active.py --predictions-pkl outputs/senescence/finetune/runs/ksplit1/predictions.pkl --isp-stats-csv outputs/senescence/isp_stats/senescence.csv --output-report outputs/senescence/failure/iter1_report.json --acquisition-config configs/active/senescence.yaml
+```
+
+If you are not using the vendored copy in this repository and do have network
+access, clone and install upstream instead of `pip install git+https://...`
+(`pip`'s partial clone often fails against Hugging Face with "fatal: expected 'packfile'"):
+
+```bash
+git lfs install   # required: the package contains LFS-tracked dictionary files
+git clone https://huggingface.co/ctheodoris/Geneformer
+pip install ./Geneformer
 ```
 
 Or run the whole loop at once:

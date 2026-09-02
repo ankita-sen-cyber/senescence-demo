@@ -51,7 +51,13 @@ def run_isp(
     """Run the perturber and return the output directory (batched pickle files)."""
     from geneformer import InSilicoPerturber
 
+    from rnaseq_loop.mechanism.prep import ensure_state_column, resolve_model_directory
+
     out = ensure_dir(output_directory)
+    model_directory = resolve_model_directory(model_directory)
+    state_key = (cfg.cell_states_to_model or {}).get("state_key")
+    if state_key:
+        input_data_file = ensure_state_column(input_data_file, state_key)
     state_embs = torch.load(cfg.state_embs_dict_path, weights_only=False)
     log.info(f"Loaded state_embs_dict with keys: {list(state_embs.keys())}")
 

@@ -41,7 +41,11 @@ def extract_state_embeddings(
     """
     from geneformer import EmbExtractor
 
+    from rnaseq_loop.mechanism.prep import ensure_state_column, resolve_model_directory
+
     out = ensure_dir(output_dir)
+    model_directory = resolve_model_directory(model_directory)
+    labeled_dataset = ensure_state_column(labeled_dataset, state_key)
     log.info(f"Extracting embeddings from {model_directory}")
 
     ex = EmbExtractor(

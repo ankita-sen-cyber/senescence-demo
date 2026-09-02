@@ -1,6 +1,6 @@
 # In silico perturbation for senescence-reversal target discovery.
 state_embs:
-  model_directory: outputs/senescence/finetune/runs/ksplit1/                 # populated after finetune
+  model_directory: outputs/senescence/finetune/runs                             # auto-resolved to */ksplit1/
   labeled_dataset: outputs/senescence/finetune/prepared/senescence_labeled.dataset
   state_key: senescence_label
   states: ["senescent", "proliferating"]
@@ -13,7 +13,7 @@ state_embs:
   nproc: 4
 
 isp:
-  model_directory: outputs/senescence/finetune/runs/ksplit1/
+  model_directory: outputs/senescence/finetune/runs
   input_data_file: outputs/senescence/finetune/prepared/senescence_labeled.dataset
   output_directory: outputs/senescence/isp
   output_prefix: senescence
@@ -34,10 +34,10 @@ isp:
   state_embs_dict_path: outputs/senescence/state_embs/senescence_state_embs_dict.pt
   max_ncells: 2000
   emb_layer: -1
-  forward_batch_size: 100
-  nproc: 8
+  forward_batch_size: 8
+  nproc: 4
   model_version: V2
-  clear_mem_ncells: 1000
+  clear_mem_ncells: 50
 
 stats:
   isp_output_dir: outputs/senescence/isp

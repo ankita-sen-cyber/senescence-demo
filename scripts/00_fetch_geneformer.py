@@ -5,12 +5,13 @@ Usage:
 
 Notes:
 - Geneformer is distributed via the HF repo `ctheodoris/Geneformer`.
-- The repo also includes the `geneformer` Python package; install with
-  `pip install git+https://huggingface.co/ctheodoris/Geneformer`.
+- This workspace vendors the `geneformer` Python package and model folders under
+    `./Geneformer`; when present, those local copies are used before any network download.
 """
 from __future__ import annotations
 
 import argparse
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -24,42 +25,68 @@ V2_SUBFOLDERS = {
 }
 
 
+def copy_tree_contents(src: Path, dst: Path) -> None:
+    dst.mkdir(parents=True, exist_ok=True)
+    for child in src.iterdir():
+        target = dst / child.name
+        if child.is_dir():
+            shutil.copytree(child, target, dirs_exist_ok=True)
+        else:
+            shutil.copy2(child, target)
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--model", choices=list(V2_SUBFOLDERS), default="V2-104M")
     p.add_argument("--out", type=Path, default=Path("checkpoints/geneformer-V2-104M"))
     args = p.parse_args()
 
-    from huggingface_hub import snapshot_download
-
     subfolder = V2_SUBFOLDERS[args.model]
-    args.out.mkdir(parents=True, exist_ok=True)
-    print(f"Downloading ctheodoris/Geneformer / {subfolder}  →  {args.out}")
+    repo_root = Path(__file__).resolve().parents[1]
+    vendored_repo = repo_root / "Geneformer"
+    vendored_model = vendored_repo / subfolder
 
-    snapshot_download(
-        repo_id="ctheodoris/Geneformer",
-        allow_patterns=[f"{subfolder}/*"],
-        local_dir=str(args.out.parent),
-        local_dir_use_symlinks=False,
-    )
+    if vendored_model.exists():
+        print(f"Staging vendored Geneformer model {subfolder}  →  {args.out}")
+        copy_tree_contents(vendored_model, args.out)
+        print(f"Model ready at {args.out}")
+    else:
+        from huggingface_hub import snapshot_download
 
-    # Move subfolder contents up to `args.out` for a clean model_directory path.
-    src = args.out.parent / subfolder
-    if src.exists() and src != args.out:
-        for f in src.iterdir():
-            f.rename(args.out / f.name)
-        src.rmdir()
+        args.out.mkdir(parents=True, exist_ok=True)
+        print(f"Downloading ctheodoris/Geneformer / {subfolder}  →  {args.out}")
 
-    print(f"Model ready at {args.out}")
+        snapshot_download(
+            repo_id="ctheodoris/Geneformer",
+            allow_patterns=[f"{subfolder}/*"],
+            local_dir=str(args.out.parent),
+            local_dir_use_symlinks=False,
+        )
+
+        # Move subfolder contents up to `args.out` for a clean model_directory path.
+        src = args.out.parent / subfolder
+        if src.exists() and src != args.out:
+            for f in src.iterdir():
+                f.rename(args.out / f.name)
+            src.rmdir()
+
+        print(f"Model ready at {args.out}")
+
     # Also install the geneformer package if not present.
     try:
         import geneformer  # noqa: F401
     except ImportError:
-        print("Installing `geneformer` from HuggingFace...")
-        subprocess.check_call([
-            sys.executable, "-m", "pip", "install",
-            "git+https://huggingface.co/ctheodoris/Geneformer",
-        ])
+        if vendored_repo.exists():
+            print("Installing `geneformer` from local vendored source...")
+            subprocess.check_call([
+                sys.executable, "-m", "pip", "install", "-e", str(vendored_repo)
+            ])
+        else:
+            print("Installing `geneformer` from HuggingFace...")
+            subprocess.check_call([
+                sys.executable, "-m", "pip", "install",
+                "git+https://huggingface.co/ctheodoris/Geneformer",
+            ])
 
 
 if __name__ == "__main__":

@@ -55,7 +55,7 @@ You should see `True` and `NVIDIA GeForce RTX 5090`.
 
 ```bash
 pip install -r requirements.txt -r requirements-gpu.txt
-pip install git+https://huggingface.co/ctheodoris/Geneformer
+pip install -e ./Geneformer
 ```
 
 > **Note:** you have 32 GB, so you do **not** need 4-bit quantization. The config
@@ -189,7 +189,7 @@ fine-tuned model.
 | `torch.cuda.is_available()` is `False` | Driver too old or wrong PyTorch build | Update driver to ≥ 570; reinstall PyTorch |
 | `bitsandbytes` import error | bitsandbytes lacks Blackwell support | Not needed — keep `quantize_4bit_lora: false` (you have 32 GB) |
 | Out-of-memory during fine-tuning | Batch size too large | Lower `per_device_train_batch_size` in `configs/train/senescence_cls.yaml` |
-| `ModuleNotFoundError: geneformer` | Package not installed | `pip install git+https://huggingface.co/ctheodoris/Geneformer` |
+| `ModuleNotFoundError: geneformer` | Package not installed | `pip install -e ./Geneformer` |
 | Checkpoint download fails | Wrong subfolder name | Confirm the model name against the [HF repo](https://huggingface.co/ctheodoris/Geneformer) |
 
 ## What "success" looks like

@@ -3,7 +3,7 @@
 
 # Core ML
 torch>=2.6.0
-transformers>=4.44.0
+transformers>=4.46,<4.47
 accelerate>=0.33.0
 peft>=0.12.0
 bitsandbytes>=0.43.0
