@@ -19,11 +19,19 @@ from rnaseq_loop.utils import ensure_dir, get_logger
 log = get_logger(__name__)
 
 
-def get_collectri(organism: str = "human") -> pd.DataFrame:
-    """Fetch the CollecTRI TF-target regulon network (curated by decoupler team)."""
+def _import_decoupler():
     import decoupler as dc
 
-    net = dc.get_collectri(organism=organism, split_complexes=False)
+    return dc
+
+
+def get_collectri(organism: str = "human") -> pd.DataFrame:
+    """Fetch the CollecTRI TF-target regulon network (curated by decoupler team)."""
+    dc = _import_decoupler()
+    if hasattr(dc, "get_collectri"):
+        net = dc.get_collectri(organism=organism, split_complexes=False)
+    else:
+        net = dc.op.collectri(organism=organism, remove_complexes=False)
     log.info(f"CollecTRI: {len(net):,} interactions, "
              f"{net['source'].nunique():,} TFs")
     return net
@@ -31,11 +39,33 @@ def get_collectri(organism: str = "human") -> pd.DataFrame:
 
 def get_progeny(organism: str = "human", top: int = 500) -> pd.DataFrame:
     """Fetch the PROGENy pathway-footprint gene sets."""
-    import decoupler as dc
-
-    net = dc.get_progeny(organism=organism, top=top)
+    dc = _import_decoupler()
+    if hasattr(dc, "get_progeny"):
+        net = dc.get_progeny(organism=organism, top=top)
+    else:
+        net = dc.op.progeny(organism=organism, top=top)
     log.info(f"PROGENy: {net['source'].nunique()} pathways, {len(net):,} weights")
     return net
+
+
+def _run_linear_model(mat: pd.DataFrame, net: pd.DataFrame, method: str, min_n: int):
+    """Run MLM/ULM on both decoupler 1.x (`run_*`) and 2.x (`mt.*`) APIs."""
+    dc = _import_decoupler()
+    method = method.lower()
+    old_name = {"mlm": "run_mlm", "ulm": "run_ulm", "wsum": "run_wsum"}.get(method)
+    if old_name and hasattr(dc, old_name):
+        return getattr(dc, old_name)(
+            mat=mat,
+            net=net,
+            source="source",
+            target="target",
+            weight="weight",
+            min_n=min_n,
+            verbose=False,
+        )
+    if not hasattr(dc, "mt") or not hasattr(dc.mt, method):
+        raise AttributeError(f"decoupler has no method {method!r}")
+    return getattr(dc.mt, method)(mat, net, tmin=min_n, verbose=False)
 
 
 def tf_activity_from_ranked_genes(
@@ -50,8 +80,6 @@ def tf_activity_from_ranked_genes(
     `gene_scores.index` must be gene symbols (or Ensembl IDs matching the
     network's `target` column). CollecTRI's default is gene symbols.
     """
-    import decoupler as dc
-
     if net is None:
         net = get_collectri()
 
@@ -60,13 +88,7 @@ def tf_activity_from_ranked_genes(
     if mat.index[0] != "phenotype":
         mat.index = ["phenotype"]
 
-    est, pval = dc.run_ulm(
-        mat=mat, net=net, source="source", target="target", weight="weight",
-        min_n=min_n, verbose=False,
-    ) if method == "ulm" else dc.run_mlm(
-        mat=mat, net=net, source="source", target="target", weight="weight",
-        min_n=min_n, verbose=False,
-    )
+    est, pval = _run_linear_model(mat, net, method=method, min_n=min_n)
 
     out = pd.DataFrame({
         "tf": est.columns,
@@ -83,16 +105,11 @@ def pathway_activity_from_ranked_genes(
     min_n: int = 5,
 ) -> pd.DataFrame:
     """PROGENy pathway activity."""
-    import decoupler as dc
-
     if net is None:
         net = get_progeny()
 
     mat = gene_scores.to_frame().T.rename(index={0: "phenotype"})
-    est, pval = dc.run_mlm(
-        mat=mat, net=net, source="source", target="target", weight="weight",
-        min_n=min_n, verbose=False,
-    )
+    est, pval = _run_linear_model(mat, net, method="mlm", min_n=min_n)
     out = pd.DataFrame({
         "pathway": est.columns,
         "activity": est.iloc[0].values,

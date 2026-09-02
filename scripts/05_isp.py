@@ -17,6 +17,11 @@ from rnaseq_loop.mechanism import ISPConfig, run_isp, summarize_isp
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--config", required=True, type=Path)
+    p.add_argument(
+        "--stats-only",
+        action="store_true",
+        help="Skip perturbation and only aggregate existing ISP pickle outputs.",
+    )
     args = p.parse_args()
 
     top = yaml.safe_load(args.config.read_text())
@@ -26,13 +31,16 @@ def main():
     run_keys = {"model_directory", "input_data_file", "output_directory", "output_prefix"}
     cfg = ISPConfig(**{k: v for k, v in isp_yaml.items() if k not in run_keys})
 
-    isp_dir = run_isp(
-        cfg,
-        model_directory=isp_yaml["model_directory"],
-        input_data_file=isp_yaml["input_data_file"],
-        output_directory=isp_yaml["output_directory"],
-        output_prefix=isp_yaml["output_prefix"],
-    )
+    if args.stats_only:
+        isp_dir = Path(isp_yaml["output_directory"])
+    else:
+        isp_dir = run_isp(
+            cfg,
+            model_directory=isp_yaml["model_directory"],
+            input_data_file=isp_yaml["input_data_file"],
+            output_directory=isp_yaml["output_directory"],
+            output_prefix=isp_yaml["output_prefix"],
+        )
 
     stats_yaml = top["stats"]
     summarize_isp(

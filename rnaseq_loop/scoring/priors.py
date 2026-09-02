@@ -19,6 +19,48 @@ log = get_logger(__name__)
 OT_GQL = "https://api.platform.opentargets.org/api/v4/graphql"
 
 
+def _ot_graphql(query: str, variables: dict) -> dict:
+    r = requests.post(OT_GQL, json={"query": query, "variables": variables}, timeout=60)
+    r.raise_for_status()
+    payload = r.json()
+    if payload.get("errors"):
+        raise RuntimeError(payload["errors"])
+    return payload["data"]
+
+
+def _resolve_ot_disease_id(disease_efo: str) -> str:
+    """Return a live Open Targets disease id, searching if the given EFO is stale."""
+    probe = """
+    query DiseaseExists($efoId: String!) {
+      disease(efoId: $efoId) { id name }
+    }
+    """
+    data = _ot_graphql(probe, {"efoId": disease_efo})
+    if data.get("disease"):
+        return data["disease"]["id"]
+
+    search = """
+    query DiseaseSearch($q: String!) {
+      search(queryString: $q, entityNames: ["disease"], page: {index: 0, size: 5}) {
+        hits { id name entity }
+      }
+    }
+    """
+    hits = _ot_graphql(search, {"q": disease_efo}).get("search", {}).get("hits") or []
+    diseases = [h for h in hits if h.get("entity") == "disease" and h.get("id")]
+    if not diseases:
+        raise ValueError(
+            f"No disease found for EFO id {disease_efo}. "
+            "Open Targets IDs change; try searching https://platform.opentargets.org/"
+        )
+    chosen = diseases[0]["id"]
+    log.warning(
+        f"Open Targets has no disease {disease_efo}; using search hit "
+        f"{chosen} ({diseases[0].get('name')})"
+    )
+    return chosen
+
+
 def opentargets_association(
     disease_efo: str,
     top_n: int = 500,
@@ -26,9 +68,14 @@ def opentargets_association(
 ) -> pd.DataFrame:
     """
     Fetch target-disease association scores for a disease EFO id
-    (e.g. 'EFO_0000305' for breast carcinoma, 'EFO_0009676' for aging).
+    (e.g. 'EFO_0022597' for aging, 'MONDO_0007254' for breast cancer).
     """
     cache_dir = ensure_dir(cache_dir)
+    cache_file = cache_dir / f"{disease_efo}_top{top_n}.parquet"
+    if cache_file.exists():
+        return pd.read_parquet(cache_file)
+
+    disease_efo = _resolve_ot_disease_id(disease_efo)
     cache_file = cache_dir / f"{disease_efo}_top{top_n}.parquet"
     if cache_file.exists():
         return pd.read_parquet(cache_file)
@@ -49,13 +96,7 @@ def opentargets_association(
       }
     }
     """
-    r = requests.post(
-        OT_GQL,
-        json={"query": query, "variables": {"efoId": disease_efo, "size": top_n}},
-        timeout=60,
-    )
-    r.raise_for_status()
-    data = r.json()["data"]["disease"]
+    data = _ot_graphql(query, {"efoId": disease_efo, "size": top_n})["disease"]
     if data is None:
         raise ValueError(f"No disease found for EFO id {disease_efo}")
 

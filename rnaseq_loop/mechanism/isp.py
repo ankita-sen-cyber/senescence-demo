@@ -91,6 +91,38 @@ def run_isp(
     return out
 
 
+def _cell_embs_stats_dir(isp_output_dir: str | Path) -> str:
+    """Geneformer stats glob all `*_raw.pickle` files.
+
+    `emb_mode=cls_and_gene` also writes `*_gene_embs_*` pickles keyed by gene
+    tokens, not cell states. Loading those with `cell_states_to_model` makes
+    `defaultdict(list)[state]` return a list and crashes in `read_dict`.
+    Point stats at a directory that only contains cell-embedding pickles.
+    """
+    src = Path(isp_output_dir)
+    cell_files = sorted(src.glob("*cell_embs*_raw.pickle"))
+    gene_files = sorted(src.glob("*gene_embs*_raw.pickle"))
+    if not cell_files:
+        return str(src)
+    if not gene_files:
+        return str(src)
+
+    filtered = src / "_cell_embs_only"
+    filtered.mkdir(parents=True, exist_ok=True)
+    for existing in filtered.glob("*.pickle"):
+        existing.unlink()
+    for f in cell_files:
+        dest = filtered / f.name
+        if dest.exists() or dest.is_symlink():
+            dest.unlink()
+        dest.symlink_to(f.resolve())
+    log.info(
+        f"ISP stats: using {len(cell_files)} cell_embs pickles "
+        f"(ignored {len(gene_files)} gene_embs pickles) -> {filtered}"
+    )
+    return str(filtered)
+
+
 def summarize_isp(
     isp_output_dir: str,
     stats_output_dir: str,
@@ -106,6 +138,7 @@ def summarize_isp(
     from geneformer import InSilicoPerturberStats
 
     stats_dir = ensure_dir(stats_output_dir)
+    isp_for_stats = _cell_embs_stats_dir(isp_output_dir)
 
     stats = InSilicoPerturberStats(
         mode="goal_state_shift",
@@ -117,7 +150,7 @@ def summarize_isp(
     )
 
     stats.get_stats(
-        input_data_directory=isp_output_dir,
+        input_data_directory=isp_for_stats,
         null_dist_data_directory=None,
         output_directory=str(stats_dir),
         output_prefix=output_prefix,

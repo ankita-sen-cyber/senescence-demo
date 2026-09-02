@@ -42,6 +42,49 @@ def resolve_model_directory(model_directory: str | Path) -> str:
     )
 
 
+def resolve_predictions_pkl(predictions_pkl: str | Path) -> Path:
+    """Locate Classifier.validate prediction pickle, including timestamped ksplit dirs."""
+    path = Path(predictions_pkl)
+    if path.is_file():
+        return path
+
+    search_roots: list[Path] = []
+    if path.parent.exists():
+        search_roots.append(path.parent)
+    # README uses outputs/.../runs/ksplit1/predictions.pkl; real layout is
+    # outputs/.../runs/<timestamp>_.../ksplit1/<prefix>_pred_dict.pkl
+    if path.parent.name == "ksplit1":
+        search_roots.append(path.parent.parent)
+    runs = Path("outputs/senescence/finetune/runs")
+    if runs.exists():
+        search_roots.append(runs)
+
+    seen: set[Path] = set()
+    candidates: list[Path] = []
+    for root in search_roots:
+        for pat in ("**/*pred_dict.pkl", "**/predictions.pkl", "**/*pred*.pkl"):
+            for hit in root.glob(pat):
+                if hit.is_file() and hit not in seen:
+                    seen.add(hit)
+                    candidates.append(hit)
+    # Prefer ksplit prediction dicts over metrics dicts.
+    ranked = sorted(
+        candidates,
+        key=lambda p: (
+            0 if "pred_dict" in p.name else 1,
+            0 if "ksplit" in str(p) else 1,
+            -p.stat().st_mtime,
+        ),
+    )
+    if ranked:
+        log.info(f"Resolved predictions pickle {predictions_pkl} -> {ranked[0]}")
+        return ranked[0]
+    raise FileNotFoundError(
+        f"No predictions pickle at {predictions_pkl} and none found under "
+        "outputs/senescence/finetune/runs (expected *pred_dict.pkl)."
+    )
+
+
 def _find_id_class_dict(labeled_dataset: Path) -> Path:
     candidates = list(labeled_dataset.parent.glob("*_id_class_dict.pkl"))
     if not candidates:
