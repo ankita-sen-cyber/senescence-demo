@@ -55,6 +55,11 @@ here's the biological reason why."
 
 ## Two ways to run it
 
+Choose one route first:
+
+- Use Option A if you want a fast CPU run with no GPU dependencies.
+- Use Option B if you have an NVIDIA GPU and want the full Geneformer loop.
+
 ### Option A — Classical (CPU, works today)
 
 No GPU needed. Runs in ~1–2 minutes on a laptop.
@@ -101,6 +106,11 @@ python scripts/06_mechanism.py --isp-stats-csv outputs/senescence/isp_stats/sene
 python scripts/07_score_targets.py --config configs/scoring/senescence.yaml
 python scripts/08_failure_and_active.py --predictions-pkl outputs/senescence/finetune/runs/ksplit1/predictions.pkl --isp-stats-csv outputs/senescence/isp_stats/senescence.csv --output-report outputs/senescence/failure/iter1_report.json --acquisition-config configs/active/senescence.yaml
 ```
+
+Use only one Geneformer install method:
+
+- Default in this repo: `pip install -e ./Geneformer`
+- Alternative: clone upstream and install that clone instead
 
 If you are not using the vendored copy in this repository and do have network
 access, clone and install upstream instead of `pip install git+https://...`
@@ -159,7 +169,7 @@ image in the `Dockerfile` to a CUDA 12.8 build.
 │   ├── download_data.py
 │   ├── 00_fetch_geneformer.py … 08_failure_and_active.py
 │   └── run_loop.py         # the closed-loop driver
-├── configs/                # Hydra YAML configs
+├── configs/                # YAML configs for each pipeline stage
 ├── tests/                  # pytest suite
 ├── requirements.txt        # CPU deps
 ├── requirements-gpu.txt    # Geneformer/GPU deps

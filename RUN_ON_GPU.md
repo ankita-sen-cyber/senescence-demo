@@ -192,13 +192,13 @@ fine-tuned model.
 | `ModuleNotFoundError: geneformer` | Package not installed | `pip install -e ./Geneformer` |
 | Checkpoint download fails | Wrong subfolder name | Confirm the model name against the [HF repo](https://huggingface.co/ctheodoris/Geneformer) |
 
-## What "success" looks like
+## Success criteria
 
-1. Fine-tuned classifier with `eval_macro_f1 ≥ 0.8`.
-2. In silico perturbation ranks known senescence genes (CDKN1A, SERPINE1, IL6,
-   BCL2L1, MDM2) near the top of the attribution list.
-3. The failure report identifies *where* the model is weak (e.g. a specific
-   dataset or cell type) and the active-learning step proposes a next experiment.
+1. Fine-tuning completes with `eval_macro_f1 >= 0.8`.
+2. ISP attribution ranks established senescence genes (CDKN1A, SERPINE1, IL6,
+    BCL2L1, MDM2) near the top.
+3. Failure analysis isolates weak slices (for example: dataset or cell type),
+    and active learning returns a concrete next-experiment pick list.
 
-If you get all three, you have a complete, runnable version of the closed-loop
-pipeline — the foundation-model upgrade to the classical demo.
+Meeting all three indicates the closed-loop foundation-model pipeline is running
+end-to-end as intended.
