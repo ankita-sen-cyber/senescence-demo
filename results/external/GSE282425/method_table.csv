@@ -1,0 +1,6 @@
+method,accuracy,balanced_accuracy,auroc,macro_f1,mcc
+Geneformer v1,0.422,0.472,0.455,0.342,-0.096
+Logistic regression (top 100 genes),0.468,0.505,0.521,0.436,0.012
+Linear SVM (top 100 genes),0.463,0.504,0.541,0.421,0.012
+Nearest centroid (top 100 genes),0.430,0.482,0.491,0.346,-0.066
+Training-prior dummy baseline,0.562,0.500,0.500,0.360,0.000

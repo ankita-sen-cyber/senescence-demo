@@ -187,6 +187,11 @@ young vs. senescent fibroblasts):
   including the drug targets BCL-xL and MDM2.
 - **76.7% held-out accuracy** (leave-one-cell-line-out) vs. 50% chance — the model
   generalizes to cell lines it has never seen.
+
+This is an **unseen-cell-line result within GSE63577**, not validation on an
+independent external cohort. Run `python generalize.py` for the full baseline
+comparison and uncertainty estimates; methodology and outputs are documented in
+[EVALUATION.md](EVALUATION.md).
 - Failure analysis surfaced a real finding: **senescence is heterogeneous** across
   cell lines (the model is perfect on 3 lines, at chance on 2).
 

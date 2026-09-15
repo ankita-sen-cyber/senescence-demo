@@ -1,0 +1,19 @@
+{
+  "accession": "GSE282425",
+  "source_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE282425",
+  "pubmed_id": "39810225",
+  "organism": "Homo sapiens",
+  "cell_type": "primary human dermal fibroblast",
+  "role": "independent_test_only",
+  "barcode_suffixes": {
+    "1": {"sample_id": "GSM8642882", "label": "senescent", "culture": "2D"},
+    "2": {"sample_id": "GSM8642883", "label": "senescent", "culture": "3D"},
+    "3": {"sample_id": "GSM8642880", "label": "proliferating", "culture": "2D"},
+    "4": {"sample_id": "GSM8642881", "label": "proliferating", "culture": "3D"}
+  },
+  "sha256": {
+    "GSE282425_barcodes.tsv.gz": "5945b59ae608ebfb2ad55b8527f50a3f254532b6a692c803ce4f49335cb0c681",
+    "GSE282425_features.tsv.gz": "8f978c80872e705d9214ca3705d74e101a0f5b305c4495efc379aeb0c361da7c",
+    "GSE282425_matrix.mtx.gz": "7132e6e715a176d05d04d8f749ef77e7717c555ad4a5e541a347c20da7c7e7bc"
+  }
+}
