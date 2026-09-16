@@ -1,0 +1,20 @@
+{
+  "training_study": "GSE226225",
+  "external_test_study": "GSE282425",
+  "base_model": "Geneformer V2-104M",
+  "training_cells": 14000,
+  "training_samples": 9,
+  "training_class_counts": {
+    "proliferating": 7000,
+    "senescent": 7000
+  },
+  "epochs": 1,
+  "batch_size": 6,
+  "learning_rate": 0.00005,
+  "freeze_layers": 2,
+  "seed": 42,
+  "model_sha256": "d67437039f640d64e57158d22e9d556282f31831cf6adf74b401f8905d3bd87c",
+  "aggregation": "mean cell probability by sample",
+  "decision_threshold": 0.5,
+  "threshold_tuned_on_external_test": false
+}

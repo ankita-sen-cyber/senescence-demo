@@ -1,0 +1,5 @@
+model,evaluation_unit,n,accuracy,balanced_accuracy,auroc,macro_f1,mcc,predicted_senescent
+original_mixed_cell_geneformer,cells,3097,0.421698,0.472349,0.455002,0.341635,-0.096296,2821
+fibroblast_only_geneformer,cells,3097,0.437843,0.499511,0.770387,0.307408,-0.007814,3085
+original_mixed_cell_geneformer,samples,4,0.500000,0.500000,0.250000,0.333333,,4
+fibroblast_only_geneformer,samples,4,0.500000,0.500000,0.750000,0.333333,,4

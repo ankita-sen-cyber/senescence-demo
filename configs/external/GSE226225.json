@@ -1,0 +1,18 @@
+{
+  "accession": "GSE226225",
+  "source_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE226225",
+  "pubmed_id": "37086265",
+  "role": "fibroblast_training",
+  "archive_sha256": "d17f787c6176c044f732948fbf2bd2330a0f9e16799f629ad0a66275a9eb7e9f",
+  "included_labels": {
+    "proliferating": ["CTRL", "ETO day 0"],
+    "senescent": ["replicative senescence", "ionizing radiation day 10", "etoposide day 10"]
+  },
+  "excluded_as_ambiguous": ["ETO day 1", "ETO day 2", "ETO day 4", "ETO day 7"],
+  "sampling": {
+    "proliferating_cells_per_sample": 3500,
+    "senescent_cells_per_sample": 1000,
+    "total_per_class": 7000,
+    "seed": 42
+  }
+}
