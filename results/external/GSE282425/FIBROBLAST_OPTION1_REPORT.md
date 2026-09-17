@@ -70,5 +70,28 @@ and another untouched study should provide final confirmation.
 
 The experiment successfully implements Option 1: Geneformer processes cells
 individually, and its probabilities are aggregated by biological sample. It is
-probability pooling, not raw-count pseudobulking; raw pseudobulk should remain a
-separate conventional baseline.
+probability pooling, not raw-count pseudobulking.
+
+## Conclusion
+
+Fibroblast-specific fine-tuning used 14,000 experimentally labelled WI-38
+fibroblasts from 9 GSE226225 samples (7,000 proliferating and 7,000 senescent)
+and was evaluated without retraining on 3,097 dermal fibroblasts from 4
+independent GSE282425 samples. Compared with the original model, cell-level
+AUROC increased from 0.455 to 0.770 and sample-level AUROC increased from 0.250
+to 0.750, indicating substantially better ranking of senescent versus
+proliferating observations.
+
+However, classification at the fixed 0.5 threshold did not improve: the model
+called 3,085 of 3,097 cells and all 4 samples senescent. Cell-level balanced
+accuracy was 0.500, while sample-level accuracy and balanced accuracy were both
+0.500 (2 of 4 samples classified correctly). Therefore, the model detects a
+useful fibroblast senescence signal but is not yet reliable for threshold-based
+product predictions. A separate labelled validation study is needed to select
+and calibrate the threshold without using the external test results.
+
+This experiment completed the professor's fibroblast-focused Geneformer
+request and sample-level probability pooling. A separate true-pseudobulk
+experiment has now also been completed. It achieved 3 of 4 correct external
+sample predictions, balanced accuracy 0.750, and AUROC 1.000; see
+[PSEUDOBULK_REPORT.md](PSEUDOBULK_REPORT.md).

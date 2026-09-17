@@ -1,0 +1,10 @@
+sample_id,true_label,induction,n_cells,library_size
+GSM7068354,proliferating,untreated_control,5608,129945482
+GSM7068361,proliferating,etoposide_day_0,6518,179678312
+GSM7068355,senescent,replicative_senescence,2920,95762075
+GSM7068356,senescent,replicative_senescence,2670,95183130
+GSM7068357,senescent,ionizing_radiation_day_10,5173,73087705
+GSM7068358,senescent,ionizing_radiation_day_10,3519,76003523
+GSM7068359,senescent,etoposide_day_10,3928,70173424
+GSM7068360,senescent,etoposide_day_10,3804,53347420
+GSM7068366,senescent,etoposide_day_10,3858,107647963

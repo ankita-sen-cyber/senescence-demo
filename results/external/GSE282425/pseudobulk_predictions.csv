@@ -1,0 +1,5 @@
+sample_id,true_label,n_cells,library_size,probability_senescent,predicted_label,correct
+GSM8642880,proliferating,1187,29307780,0.4698210899473921,proliferating,True
+GSM8642881,proliferating,554,8407874,0.6093882847833731,senescent,False
+GSM8642882,senescent,1060,19933240,0.6729369792048948,senescent,True
+GSM8642883,senescent,296,3075412,0.805667943442749,senescent,True

@@ -1,0 +1,28 @@
+{
+  "method": "raw-count sum by biological sample; log1p CPM; training-only expression filter and Welch-t feature selection; class-balanced L2 logistic regression",
+  "training_study": "GSE226225",
+  "external_test_study": "GSE282425",
+  "top_n": 100,
+  "min_cpm": 1.0,
+  "min_training_samples": 2,
+  "regularization_c": 0.1,
+  "seed": 42,
+  "n_training_samples": 9,
+  "n_test_samples": 4,
+  "n_shared_genes": 15316,
+  "n_genes_after_training_filter": 12680,
+  "n_selected_genes": 100,
+  "accuracy": 0.75,
+  "balanced_accuracy": 0.75,
+  "auroc": 1.0,
+  "macro_f1": 0.7333333333333334,
+  "mcc": 0.5773502691896258,
+  "confusion_matrix": {
+    "true_proliferating_pred_proliferating": 1,
+    "true_proliferating_pred_senescent": 1,
+    "true_senescent_pred_proliferating": 0,
+    "true_senescent_pred_senescent": 2
+  },
+  "decision_threshold": 0.5,
+  "threshold_tuned_on_external_test": false
+}

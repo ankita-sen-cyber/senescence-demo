@@ -1,0 +1,4 @@
+method,training_unit,n_training_samples,n_test_samples,correct_samples,accuracy,balanced_accuracy,auroc,macro_f1,mcc
+original_mixed_cell_geneformer,cell_then_probability_pooling,,4,2,0.500000,0.500000,0.250000,0.333333,
+fibroblast_only_geneformer,cell_then_probability_pooling,9,4,2,0.500000,0.500000,0.750000,0.333333,
+pseudobulk_logistic_regression,raw_count_sum_by_sample,9,4,3,0.750000,0.750000,1.000000,0.733333,0.577350
